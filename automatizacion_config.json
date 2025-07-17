@@ -1,0 +1,86 @@
+[
+    {
+        "tipo": "click",
+        "posicion": {
+            "x": 144,
+            "y": 15,
+            "nombre": "Seleccionar Terminal"
+        },
+        "nombre": "Seleccionar Terminal"
+    },
+    {
+        "tipo": "escribir",
+        "texto": "cd ..",
+        "posicion": {
+            "x": 192,
+            "y": 110,
+            "nombre": "salir de carpeta"
+        },
+        "nombre": "salir de carpeta"
+    },
+    {
+        "tipo": "tecla",
+        "tecla": "enter",
+        "nombre": "enter"
+    },
+    {
+        "tipo": "escribir",
+        "texto": "cd webhooksbancos\\",
+        "posicion": {
+            "x": 219,
+            "y": 182,
+            "nombre": "Entrar en carpeta"
+        },
+        "nombre": "Entrar en carpeta"
+    },
+    {
+        "tipo": "tecla",
+        "tecla": "enter",
+        "nombre": "enter"
+    },
+    {
+        "tipo": "escribir",
+        "texto": "cls",
+        "posicion": {
+            "x": 156,
+            "y": 336,
+            "nombre": "limpiar terminal"
+        },
+        "nombre": "limpiar terminal"
+    },
+    {
+        "tipo": "tecla",
+        "tecla": "enter",
+        "nombre": "enter"
+    },
+    {
+        "tipo": "click",
+        "posicion": {
+            "x": 359,
+            "y": 13,
+            "nombre": "Volver al programa"
+        },
+        "nombre": "Volver al programa"
+    },
+    {
+        "tipo": "esperar_texto",
+        "texto": "gemini",
+        "region": [
+            217,
+            130,
+            136,
+            26
+        ],
+        "timeout": 30,
+        "nombre": "esperar texto"
+    },
+    {
+        "tipo": "click",
+        "posicion": {
+            "x": 326,
+            "y": 13,
+            "nombre": "volver a programa"
+        },
+        "nombre": "volver a programa"
+    }
+]

@@ -18,7 +18,7 @@ except Exception as e:
 pyautogui.PAUSE = 0.5
 pyautogui.FAILSAFE = True
 
-CONFIG_FILE = "automatizacion_config.json"
+CONFIG_FILE = "automatizacion_config_no_close_session.json"
 ejecucion_automatica = False
 intervalo = 15  # segundos entre ciclos completos
 

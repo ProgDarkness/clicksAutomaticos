@@ -7,7 +7,7 @@ import os
 import threading
 import keyboard
 import pytesseract
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageTk  
 import sys
 
 # Configuración de pytesseract
@@ -225,12 +225,145 @@ class AutomatizadorApp:
                 self.root.after(100, self.verificar_captura_posicion)
 
     def iniciar_captura_region(self):
+        """Inicia el proceso de captura de una región rectangular"""
         self.capturando_region = True
         self.region_actual = None
+        self.esquina_superior = None
+        self.esquina_inferior = None
+    
         self.estado_label.config(text="Capturando región...", foreground="blue")
-        self.log("Mueve el mouse a la esquina superior izquierda y presiona SUPR")
-        self.root.after(100, self.verificar_captura_region_paso1)
-
+        self.log("Captura de región iniciada")
+        self.log("Paso 1: Mueve el mouse a la esquina superior izquierda y presiona SUPR")
+    
+        # Guardar estado de los botones para restaurarlos después
+        self.botones_estado_previo = self.habilitar_botones(False)
+    
+        # Cambiar el cursor para indicar modo de captura
+        self.root.config(cursor="crosshair")
+    
+        # Iniciar el proceso de captura
+        self.root.after(100, self.capturar_esquina_superior)
+        
+    def capturar_esquina_superior(self):
+        if not self.capturando_region:
+            return
+    
+        if keyboard.is_pressed('delete'):
+            self.esquina_superior = pyautogui.position()
+            self.log(f"Esquina superior izquierda capturada: {self.esquina_superior}")
+            self.log("Paso 2: Mueve el mouse a la esquina inferior derecha y presiona SUPR")
+            self.root.after(100, self.capturar_esquina_inferior)
+        elif keyboard.is_pressed('escape'):
+            self.cancelar_captura_region()
+        else:
+            self.root.after(100, self.capturar_esquina_superior)
+    
+    def capturar_esquina_inferior(self):
+        if not self.capturando_region:
+            return
+    
+        if keyboard.is_pressed('delete'):
+            self.esquina_inferior = pyautogui.position()
+        
+            # Asegurarse de que las coordenadas sean válidas
+            x1 = min(self.esquina_superior.x, self.esquina_inferior.x)
+            y1 = min(self.esquina_superior.y, self.esquina_inferior.y)
+            x2 = max(self.esquina_superior.x, self.esquina_inferior.x)
+            y2 = max(self.esquina_superior.y, self.esquina_inferior.y)
+        
+            width = x2 - x1
+            height = y2 - y1
+        
+            # Validar tamaño mínimo
+            if width < 10 or height < 10:
+                self.log("Región demasiado pequeña, debe ser al menos 10x10 píxeles")
+                self.cancelar_captura_region()
+                return
+        
+            self.region_actual = (x1, y1, width, height)
+            self.finalizar_captura_region()
+        elif keyboard.is_pressed('escape'):
+            self.cancelar_captura_region()
+        else:
+            self.root.after(100, self.capturar_esquina_inferior)
+    
+    def finalizar_captura_region(self):
+        """Finaliza el proceso de captura exitosamente"""
+        self.capturando_region = False
+        self.estado_label.config(text="Listo", foreground="green")
+        self.posicion_label.config(text=f"Región capturada: {self.region_actual}")
+        self.log(f"Región capturada exitosamente: {self.region_actual}")
+        self.root.config(cursor="")
+        self.habilitar_botones(True, self.botones_estado_previo)
+    
+        # Dibujar un rectángulo temporal para visualización
+        self.mostrar_preview_region()
+        
+    def cancelar_captura_region(self):
+        """Cancela el proceso de captura"""
+        self.capturando_region = False
+        self.region_actual = None
+        self.esquina_superior = None
+        self.esquina_inferior = None
+        self.estado_label.config(text="Listo", foreground="green")
+        self.posicion_label.config(text="Región: No capturada")
+        self.log("Captura de región cancelada")
+        self.root.config(cursor="")
+        self.habilitar_botones(True, self.botones_estado_previo)
+    
+    def mostrar_preview_region(self):
+        """Muestra un preview visual de la región capturada"""
+        try:
+            if not self.region_actual:
+                return
+        
+            x, y, w, h = self.region_actual
+            screenshot = pyautogui.screenshot(region=self.region_actual)
+        
+            # Crear ventana de preview
+            preview = tk.Toplevel(self.root)
+            preview.title("Vista Previa de Región")
+        
+            # Convertir imagen para Tkinter
+            tk_image = ImageTk.PhotoImage(screenshot)
+        
+            # Mostrar imagen
+            label = tk.Label(preview, image=tk_image)
+            label.image = tk_image  # Mantener referencia
+            label.pack()
+        
+            # Mostrar coordenadas
+            coords_label = tk.Label(preview, text=f"X: {x}, Y: {y}, Ancho: {w}, Alto: {h}")
+            coords_label.pack()
+        
+            # Botón para aceptar
+            ttk.Button(preview, text="Aceptar", command=preview.destroy).pack(pady=5)
+        
+        except Exception as e:
+            self.log(f"Error al mostrar preview: {str(e)}")
+    
+    def habilitar_botones(self, estado, estados_previos=None):
+        """Habilita/deshabilita botones durante la captura"""
+        botones = [
+            self.btn_agregar_simple, 
+            self.btn_agregar_condicional,
+            self.btn_ejecutar,
+            self.btn_automatico,
+            self.btn_detener
+        ]
+    
+        if estado and estados_previos:
+            # Restaurar estados previos
+            for btn, estado_previo in zip(botones, estados_previos):
+                btn['state'] = estado_previo
+            return [btn['state'] for btn in botones]
+        else:
+            # Guardar estados actuales y deshabilitar
+            estados = [btn['state'] for btn in botones]
+            for btn in botones:
+                btn['state'] = 'disabled' if not estado else 'normal'
+            return estados
+    
     def verificar_captura_region_paso1(self):
         if self.capturando_region:
             if keyboard.is_pressed('delete'):

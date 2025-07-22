@@ -210,12 +210,12 @@ class AutomatizadorApp:
         self.capturando_posicion = True
         self.posicion_actual = None
         self.estado_label.config(text="Capturando posición...", foreground="blue")
-        self.log("Mueve el mouse a la posición deseada y presiona SUPR para capturar")
+        self.log("Mueve el mouse a la posición deseada y presiona 's' para capturar")
         self.root.after(100, self.verificar_captura_posicion)
 
     def verificar_captura_posicion(self):
         if self.capturando_posicion:
-            if keyboard.is_pressed('delete'):
+            if keyboard.is_pressed('s'):
                 self.posicion_actual = pyautogui.position()
                 self.capturando_posicion = False
                 self.estado_label.config(text="Listo", foreground="green")
@@ -233,10 +233,7 @@ class AutomatizadorApp:
     
         self.estado_label.config(text="Capturando región...", foreground="blue")
         self.log("Captura de región iniciada")
-        self.log("Paso 1: Mueve el mouse a la esquina superior izquierda y presiona SUPR")
-    
-        # Guardar estado de los botones para restaurarlos después
-        self.botones_estado_previo = self.habilitar_botones(False)
+        self.log("Paso 1: Mueve el mouse a la esquina superior izquierda y presiona 's'")
     
         # Cambiar el cursor para indicar modo de captura
         self.root.config(cursor="crosshair")
@@ -248,10 +245,10 @@ class AutomatizadorApp:
         if not self.capturando_region:
             return
     
-        if keyboard.is_pressed('delete'):
+        if keyboard.is_pressed('s'):
             self.esquina_superior = pyautogui.position()
             self.log(f"Esquina superior izquierda capturada: {self.esquina_superior}")
-            self.log("Paso 2: Mueve el mouse a la esquina inferior derecha y presiona SUPR")
+            self.log("Paso 2: Mueve el mouse a la esquina inferior derecha y presiona 's'")
             self.root.after(100, self.capturar_esquina_inferior)
         elif keyboard.is_pressed('escape'):
             self.cancelar_captura_region()
@@ -262,7 +259,7 @@ class AutomatizadorApp:
         if not self.capturando_region:
             return
     
-        if keyboard.is_pressed('delete'):
+        if keyboard.is_pressed('s'):
             self.esquina_inferior = pyautogui.position()
         
             # Asegurarse de que las coordenadas sean válidas
@@ -294,7 +291,6 @@ class AutomatizadorApp:
         self.posicion_label.config(text=f"Región capturada: {self.region_actual}")
         self.log(f"Región capturada exitosamente: {self.region_actual}")
         self.root.config(cursor="")
-        self.habilitar_botones(True, self.botones_estado_previo)
     
         # Dibujar un rectángulo temporal para visualización
         self.mostrar_preview_region()
@@ -309,7 +305,6 @@ class AutomatizadorApp:
         self.posicion_label.config(text="Región: No capturada")
         self.log("Captura de región cancelada")
         self.root.config(cursor="")
-        self.habilitar_botones(True, self.botones_estado_previo)
     
     def mostrar_preview_region(self):
         """Muestra un preview visual de la región capturada"""
@@ -342,42 +337,20 @@ class AutomatizadorApp:
         except Exception as e:
             self.log(f"Error al mostrar preview: {str(e)}")
     
-    def habilitar_botones(self, estado, estados_previos=None):
-        """Habilita/deshabilita botones durante la captura"""
-        botones = [
-            self.btn_agregar_simple, 
-            self.btn_agregar_condicional,
-            self.btn_ejecutar,
-            self.btn_automatico,
-            self.btn_detener
-        ]
-    
-        if estado and estados_previos:
-            # Restaurar estados previos
-            for btn, estado_previo in zip(botones, estados_previos):
-                btn['state'] = estado_previo
-            return [btn['state'] for btn in botones]
-        else:
-            # Guardar estados actuales y deshabilitar
-            estados = [btn['state'] for btn in botones]
-            for btn in botones:
-                btn['state'] = 'disabled' if not estado else 'normal'
-            return estados
-    
     def verificar_captura_region_paso1(self):
         if self.capturando_region:
-            if keyboard.is_pressed('delete'):
+            if keyboard.is_pressed('s'):
                 self.esquina_superior = pyautogui.position()
                 self.capturando_region = True
                 self.log(f"Esquina superior izquierda: {self.esquina_superior}")
-                self.log("Mueve el mouse a la esquina inferior derecha y presiona SUPR")
+                self.log("Mueve el mouse a la esquina inferior derecha y presiona 's'")
                 self.root.after(100, self.verificar_captura_region_paso2)
             else:
                 self.root.after(100, self.verificar_captura_region_paso1)
 
     def verificar_captura_region_paso2(self):
         if self.capturando_region:
-            if keyboard.is_pressed('delete'):
+            if keyboard.is_pressed('s'):
                 esquina_inferior = pyautogui.position()
                 self.region_actual = (
                     self.esquina_superior.x, 
@@ -502,11 +475,11 @@ class AutomatizadorApp:
 
     def capturar_posicion_desde_dialogo(self):
         self.iniciar_captura_posicion()
-        messagebox.showinfo("Capturar Posición", "Mueve el mouse a la posición deseada y presiona SUPR para capturar")
+        messagebox.showinfo("Capturar Posición", "Mueve el mouse a la posición deseada y presiona 's' para capturar")
 
     def capturar_region_desde_dialogo(self):
         self.iniciar_captura_region()
-        messagebox.showinfo("Capturar Región", "1. Mueve a la esquina superior izquierda y presiona SUPR\n2. Mueve a la esquina inferior derecha y presiona SUPR")
+        messagebox.showinfo("Capturar Región", "1. Mueve a la esquina superior izquierda y presiona 's'\n2. Mueve a la esquina inferior derecha y presiona 's'")
 
     def agregar_accion_condicional(self):
         dialogo = tk.Toplevel(self.root)
